@@ -420,7 +420,9 @@ class Shotgun(object):
         raise NotImplementedError
 
     def upload_thumbnail(self, entity_type, entity_id, path, **kwargs):
-        pass
+        attachment = self.create("Attachment", {"filename": path}, )
+        self.update(entity_type=entity_type, entity_id=entity_id, data={"image": attachment})
+        return attachment["id"]
 
     ###################################################################################################
     # internal methods and members
@@ -497,6 +499,7 @@ class Shotgun(object):
                                    "date_time": datetime.datetime,
                                    "list": basestring,
                                    "status_list": basestring,
+                                   "image": dict,
                                    "url": dict}[sg_type]
                 except KeyError:
                     raise ShotgunError(
@@ -707,6 +710,8 @@ class Shotgun(object):
 
     def _get_field_type(self, entity_type, field):
         # split dotted form fields
+        if field == "type":
+            return "text"
         try:
             field2, entity_type2, field3 = field.split(".", 2)
             return self._get_field_type(entity_type2, field3)
